@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
@@ -13,7 +14,6 @@ import {
 
 export default function MyRecords() {
   const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [records, setRecords] = useState<any[]>([]);
 
   useEffect(() => {
@@ -37,8 +37,13 @@ export default function MyRecords() {
     if (ratio >= 0.5) return "purple";
     return "pink";
   }
-
-  function getMetrics(record: any) {
+  type Metric = {
+    label: string;
+    value: number;
+    max: number;
+    description?: string;
+  };
+  function getMetrics(record: any): Metric[] {
     // Novo modelo: POSTURA 5D
     if (
       record.fisico !== undefined ||
@@ -84,6 +89,7 @@ export default function MyRecords() {
       {
         label: "Presença",
         value: record.presenca,
+        description: undefined,
         max: 10,
       },
       {
@@ -178,7 +184,7 @@ export default function MyRecords() {
                   </Text>
                 </Box>
 
-                <SimpleGrid columns={{ base: 2, md: 5 }} mb={5} spacing={4}>
+                <SimpleGrid columns={{ base: 2, md: 5 }} mb={5}>
                   {getMetrics(r).map((metric) => (
                     <Box key={metric.label}>
                       <Text

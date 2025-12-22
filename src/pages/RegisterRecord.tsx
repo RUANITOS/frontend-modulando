@@ -134,7 +134,7 @@ export default function RegisterRecord() {
           onChange={handleChange}
         />
 
-        <SimpleGrid columns={2} w="100%" spacing={4}>
+        <SimpleGrid columns={2} w="100%">
           <StarRatingField
             label="Físico (atividade física de qualidade – 1h/dia)"
             name="fisico"
