@@ -9,12 +9,14 @@ import {
   Heading,
   SimpleGrid,
   Text,
+  HStack,
 } from "@chakra-ui/react";
-import { Slider } from "@chakra-ui/react";
+import { FaStar } from "react-icons/fa";
+
 import { useNavigate } from "react-router-dom";
 
 /* ---------- Componente reutilizável do slider ---------- */
-function SliderField({
+function StarRatingField({
   label,
   name,
   value,
@@ -25,28 +27,33 @@ function SliderField({
   value: number;
   onChange: (name: string, value: number) => void;
 }) {
+  const [hoverValue, setHoverValue] = useState<number | null>(null);
+
   return (
-    <Box w="100%" color="purple.700">
-      <Text mb={2} fontWeight="medium">
+    <Box w="100%">
+      <Text mb={2} fontWeight="medium" color="purple.700">
         {label}: {value}
       </Text>
 
-      <Slider.Root
-        min={0}
-        max={10}
-        step={1}
-        
-        value={[value]}
-        onValueChange={(details) => onChange(name, details.value[0])}
-        width="100%"
-      >
-        <Slider.Control>
-          <Slider.Track>
-            <Slider.Range />
-          </Slider.Track>
-          <Slider.Thumb index={0} />
-        </Slider.Control>
-      </Slider.Root>
+      <HStack>
+        {[1, 2, 3, 4, 5].map((star) => {
+          const isActive =
+            hoverValue !== null ? star <= hoverValue : star <= value;
+
+          return (
+            <FaStar
+              key={star}
+              size={22}
+              cursor="pointer"
+              color={isActive ? "#6B46C1" : "#D6BCFA"} // purple.600 / purple.200
+              style={{ transition: "color 0.2s ease" }}
+              onClick={() => onChange(name, star)}
+              onMouseEnter={() => setHoverValue(star)}
+              onMouseLeave={() => setHoverValue(null)}
+            />
+          );
+        })}
+      </HStack>
     </Box>
   );
 }
@@ -55,10 +62,11 @@ function SliderField({
 export default function RegisterRecord() {
   const [form, setForm] = useState({
     modulo: "",
-    presenca: 5,
-    energia: 5,
-    clareza: 5,
-    compromisso: 5,
+    fisico: 3,
+    energetico: 3,
+    emocional5d: 3,
+    mental: 3,
+    espiritual: 3,
     emocao: "",
     insight: "",
   });
@@ -90,10 +98,11 @@ export default function RegisterRecord() {
       // Limpar formulário após salvar
       setForm({
         modulo: "",
-        presenca: 5,
-        energia: 5,
-        clareza: 5,
-        compromisso: 5,
+        fisico: 3,
+        energetico: 3,
+        emocional5d: 3,
+        mental: 3,
+        espiritual: 3,
         emocao: "",
         insight: "",
       });
@@ -104,7 +113,6 @@ export default function RegisterRecord() {
   }
   const navigate = useNavigate();
   return (
-    
     <Box bg="white" p={6} rounded="md" shadow="sm">
       <Button
         onClick={() => navigate("/dashboard")}
@@ -126,32 +134,39 @@ export default function RegisterRecord() {
           onChange={handleChange}
         />
 
-        <SimpleGrid columns={2} w="100%">
-          <SliderField
-            label="Presença"
-            name="presenca"
-            value={form.presenca}
+        <SimpleGrid columns={2} w="100%" spacing={4}>
+          <StarRatingField
+            label="Físico (atividade física de qualidade – 1h/dia)"
+            name="fisico"
+            value={form.fisico}
             onChange={handleSliderChange}
           />
 
-          <SliderField
-            label="Energia"
-            name="energia"
-            value={form.energia}
+          <StarRatingField
+            label="Energético (3 pausas diárias de qualidade)"
+            name="energetico"
+            value={form.energetico}
             onChange={handleSliderChange}
           />
 
-          <SliderField
-            label="Clareza"
-            name="clareza"
-            value={form.clareza}
+          <StarRatingField
+            label="Emocional (equilíbrio diante do que vivi hoje)"
+            name="emocional5d"
+            value={form.emocional5d}
             onChange={handleSliderChange}
           />
 
-          <SliderField
-            label="Compromisso"
-            name="compromisso"
-            value={form.compromisso}
+          <StarRatingField
+            label="Mental (clareza e decisões conscientes)"
+            name="mental"
+            value={form.mental}
+            onChange={handleSliderChange}
+          />
+
+          <StarRatingField
+            label="Espiritual (3 conexões realizadas)"
+            name="espiritual"
+            value={form.espiritual}
             onChange={handleSliderChange}
           />
         </SimpleGrid>
@@ -161,7 +176,6 @@ export default function RegisterRecord() {
           placeholder="Emoção predominante"
           value={form.emocao}
           onChange={handleChange}
-          
         />
 
         <Textarea

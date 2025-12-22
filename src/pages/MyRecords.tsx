@@ -30,10 +30,78 @@ export default function MyRecords() {
     load();
   }, []);
 
-  function getScoreColor(score: number) {
-    if (score >= 8) return "green";
-    if (score >= 5) return "purple";
+  function getScoreColor(score: number, max: number) {
+    const ratio = score / max;
+
+    if (ratio >= 0.75) return "green";
+    if (ratio >= 0.5) return "purple";
     return "pink";
+  }
+
+  function getMetrics(record: any) {
+    // Novo modelo: POSTURA 5D
+    if (
+      record.fisico !== undefined ||
+      record.energetico !== undefined ||
+      record.mental !== undefined
+    ) {
+      return [
+        {
+          label: "Físico",
+          description: "Atividade física de qualidade",
+          value: record.fisico,
+          max: 5,
+        },
+        {
+          label: "Energético",
+          description: "Pausas diárias de qualidade",
+          value: record.energetico,
+          max: 5,
+        },
+        {
+          label: "Emocional",
+          description: "Equilíbrio emocional",
+          value: record.emocional5d,
+          max: 5,
+        },
+        {
+          label: "Mental",
+          description: "Clareza e decisões conscientes",
+          value: record.mental,
+          max: 5,
+        },
+        {
+          label: "Espiritual",
+          description: "Conexões realizadas",
+          value: record.espiritual,
+          max: 5,
+        },
+      ].filter((m) => m.value !== undefined);
+    }
+
+    // Modelo antigo
+    return [
+      {
+        label: "Presença",
+        value: record.presenca,
+        max: 10,
+      },
+      {
+        label: "Energia",
+        value: record.energia,
+        max: 10,
+      },
+      {
+        label: "Clareza",
+        value: record.clareza,
+        max: 10,
+      },
+      {
+        label: "Compromisso",
+        value: record.compromisso,
+        max: 10,
+      },
+    ];
   }
 
   return (
@@ -110,86 +178,35 @@ export default function MyRecords() {
                   </Text>
                 </Box>
 
-                <SimpleGrid columns={{ base: 2, md: 4 }} mb={5}>
-                  <Box>
-                    <Text
-                      fontSize="xs"
-                      color="gray.600"
-                      mb={2}
-                      fontWeight="medium"
-                    >
-                      Presença
-                    </Text>
-                    <Badge
-                      colorScheme={getScoreColor(r.presenca)}
-                      fontSize="lg"
-                      px={3}
-                      py={2}
-                      rounded="lg"
-                    >
-                      {r.presenca}/10
-                    </Badge>
-                  </Box>
+                <SimpleGrid columns={{ base: 2, md: 5 }} mb={5} spacing={4}>
+                  {getMetrics(r).map((metric) => (
+                    <Box key={metric.label}>
+                      <Text
+                        fontSize="xs"
+                        color="gray.600"
+                        mb={1}
+                        fontWeight="medium"
+                      >
+                        {metric.label}
+                      </Text>
 
-                  <Box>
-                    <Text
-                      fontSize="xs"
-                      color="gray.600"
-                      mb={2}
-                      fontWeight="medium"
-                    >
-                      Energia
-                    </Text>
-                    <Badge
-                      colorScheme={getScoreColor(r.energia)}
-                      fontSize="lg"
-                      px={3}
-                      py={2}
-                      rounded="lg"
-                    >
-                      {r.energia}/10
-                    </Badge>
-                  </Box>
+                      {metric.description && (
+                        <Text fontSize="10px" color="gray.400" mb={2}>
+                          {metric.description}
+                        </Text>
+                      )}
 
-                  <Box>
-                    <Text
-                      fontSize="xs"
-                      color="gray.600"
-                      mb={2}
-                      fontWeight="medium"
-                    >
-                      Clareza
-                    </Text>
-                    <Badge
-                      colorScheme={getScoreColor(r.clareza)}
-                      fontSize="lg"
-                      px={3}
-                      py={2}
-                      rounded="lg"
-                    >
-                      {r.clareza}/10
-                    </Badge>
-                  </Box>
-
-                  <Box>
-                    <Text
-                      fontSize="xs"
-                      color="gray.600"
-                      mb={2}
-                      fontWeight="medium"
-                    >
-                      Compromisso
-                    </Text>
-                    <Badge
-                      colorScheme={getScoreColor(r.compromisso)}
-                      fontSize="lg"
-                      px={3}
-                      py={2}
-                      rounded="lg"
-                    >
-                      {r.compromisso}/10
-                    </Badge>
-                  </Box>
+                      <Badge
+                        colorScheme={getScoreColor(metric.value, metric.max)}
+                        fontSize="lg"
+                        px={3}
+                        py={2}
+                        rounded="lg"
+                      >
+                        {metric.value}/{metric.max}
+                      </Badge>
+                    </Box>
+                  ))}
                 </SimpleGrid>
 
                 {r.emocao && (
