@@ -1,26 +1,53 @@
 import { useState } from "react";
 import { api } from "../services/api";
-import {
-  Box,
-  Button,
-  Input,
-  Heading,
-  VStack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Button, Input, Heading, VStack, Text } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login({
   onLogin,
 }: {
   onLogin: (token: string) => void;
 }) {
-  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
-  async function handleLogin() {
+  const [email, setEmail] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [nome, setNome] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
+
+  const [userExists, setUserExists] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function checkEmail() {
     if (!email) return;
 
-    const response = await api.post("/auth/login", { email });
-    onLogin(response.data.token);
+    setLoading(true);
+    const response = await api.get("/auth/check-email", {
+      params: { email },
+    });
+
+    setUserExists(response.data.exists);
+    setLoading(false);
+  }
+
+  async function handleSubmit() {
+    setLoading(true);
+
+    const response = await api.post("/auth/login", {
+      email,
+      cpf,
+      nome,
+      dataNascimento,
+    });
+
+    const { token, user } = response.data;
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("email", user.email);
+    localStorage.setItem("userName", user.nome);
+
+    onLogin(token);
+    navigate("/dashboard");
   }
 
   return (
@@ -32,19 +59,76 @@ export default function Login({
       bg="gray.50"
     >
       <Box bg="white" p={8} rounded="md" shadow="md" w="100%" maxW="360px">
-        <VStack >
+        <VStack>
           <Heading size="md">Modulando com Frequência</Heading>
-          <Text color="gray.500">Entre com seu email</Text>
 
           <Input
             placeholder="seu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={checkEmail}
           />
 
-          <Button colorScheme="purple" w="100%" onClick={handleLogin}>
-            Entrar
-          </Button>
+          {userExists === true && (
+            <>
+              <Input
+                placeholder="Senha (CPF)"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+                type="password"
+              />
+
+              <Button
+                colorScheme="purple"
+                variant="outline"
+                w="100%"
+                color="purple.700"
+                borderColor={"purple"}
+                onClick={handleSubmit}
+                loading={loading}
+                bg={"white"}
+              >
+                Entrar
+              </Button>
+            </>
+          )}
+
+          {userExists === false && (
+            <>
+              <Input
+                placeholder="Seu nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+              />
+
+              <Input
+                placeholder="CPF (somente números)"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+              />
+
+              <Input
+                type="date"
+                value={dataNascimento}
+                onChange={(e) => setDataNascimento(e.target.value)}
+              />
+
+              <Button
+                colorScheme="purple"
+                w="100%"
+                onClick={handleSubmit}
+                loading={loading}
+              >
+                Criar conta
+              </Button>
+            </>
+          )}
+
+          {userExists === null && (
+            <Text color="gray.500" fontSize="sm">
+              Informe seu email para continuar
+            </Text>
+          )}
         </VStack>
       </Box>
     </Box>

@@ -37,86 +37,35 @@ export default function MyRecords() {
     if (ratio >= 0.5) return "purple";
     return "pink";
   }
-  type Metric = {
-    label: string;
-    value: number;
-    max: number;
-    description?: string;
+  function formatLabel(text: string) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  type Causa = {
+    causaId: string;
+    nota: number;
+    subcausas?: string[];
   };
-  function getMetrics(record: any): Metric[] {
-    // Novo modelo: POSTURA 5D
-    if (
-      record.fisico !== undefined ||
-      record.energetico !== undefined ||
-      record.mental !== undefined
-    ) {
-      return [
-        {
-          label: "Físico",
-          description: "Atividade física de qualidade",
-          value: record.fisico,
-          max: 5,
-        },
-        {
-          label: "Energético",
-          description: "Pausas diárias de qualidade",
-          value: record.energetico,
-          max: 5,
-        },
-        {
-          label: "Emocional",
-          description: "Equilíbrio emocional",
-          value: record.emocional5d,
-          max: 5,
-        },
-        {
-          label: "Mental",
-          description: "Clareza e decisões conscientes",
-          value: record.mental,
-          max: 5,
-        },
-        {
-          label: "Espiritual",
-          description: "Conexões realizadas",
-          value: record.espiritual,
-          max: 5,
-        },
-      ].filter((m) => m.value !== undefined);
+
+
+  function getMetrics(record: any) {
+    const causas: Causa[] = record.causas ?? [];
+
+    if (causas.length > 0) {
+      return causas.map((c) => ({
+        label: formatLabel(c.causaId),
+        value: c.nota,
+        max: 5,
+        subcausas: c.subcausas ?? [],
+      }));
     }
 
-    // Modelo antigo
-    return [
-      {
-        label: "Presença",
-        value: record.presenca,
-        description: undefined,
-        max: 10,
-      },
-      {
-        label: "Energia",
-        value: record.energia,
-        max: 10,
-      },
-      {
-        label: "Clareza",
-        value: record.clareza,
-        max: 10,
-      },
-      {
-        label: "Compromisso",
-        value: record.compromisso,
-        max: 10,
-      },
-    ];
+    // 🔙 fallback de segurança (caso algum registro antigo exista)
+    return [];
   }
 
   return (
-    <Box
-      minH="100vh"
-      bgGradient="linear(to-br, purple.50, pink.50, purple.100)"
-      py={10}
-      px={4}
-    >
+    <Box minH="100vh" py={10} px={4}>
       <Box maxW="1200px" mx="auto">
         <Button
           onClick={() => navigate("/dashboard")}
@@ -136,7 +85,6 @@ export default function MyRecords() {
             bg="white"
             p={12}
             rounded="2xl"
-            shadow="xl"
             textAlign="center"
             border="1px"
             borderColor="purple.100"
@@ -155,8 +103,8 @@ export default function MyRecords() {
           <Stack>
             {records.map((r) => (
               <Box
-                key={r.id}
-                bg="white"
+                key={r.registroId}
+                bg="rgba(129, 90, 213, 0.09)"
                 p={6}
                 shadow="xl"
                 rounded="2xl"
@@ -171,11 +119,11 @@ export default function MyRecords() {
               >
                 <Box mb={5}>
                   <Heading size="md" mb={2} color="purple.700">
-                    {r.modulo}
+                    {r.moduloId}
                   </Heading>
                   <Text fontSize="sm" color="gray.500">
-                    {r.createdAt
-                      ? new Date(r.createdAt).toLocaleDateString("pt-BR", {
+                    {r.data
+                      ? new Date(r.data).toLocaleDateString("pt-BR", {
                           day: "2-digit",
                           month: "long",
                           year: "numeric",
@@ -196,18 +144,13 @@ export default function MyRecords() {
                         {metric.label}
                       </Text>
 
-                      {metric.description && (
-                        <Text fontSize="10px" color="gray.400" mb={2}>
-                          {metric.description}
-                        </Text>
-                      )}
-
                       <Badge
                         colorScheme={getScoreColor(metric.value, metric.max)}
                         fontSize="lg"
                         px={3}
                         py={2}
                         rounded="lg"
+                        bg={"white"}
                       >
                         {metric.value}/{metric.max}
                       </Badge>
@@ -216,7 +159,7 @@ export default function MyRecords() {
                 </SimpleGrid>
 
                 {r.emocao && (
-                  <Box mb={4} p={4} bg="purple.50" rounded="xl">
+                  <Box mb={4} p={4} bg="white" rounded="xl">
                     <Text
                       fontSize="sm"
                       fontWeight="semibold"
@@ -233,7 +176,7 @@ export default function MyRecords() {
 
                 {r.insight && (
                   <Box
-                    bgGradient="linear(to-r, purple.50, pink.50)"
+                    bg={"white"}
                     p={4}
                     rounded="xl"
                     borderLeft="4px"

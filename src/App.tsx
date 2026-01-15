@@ -8,17 +8,55 @@ import { useAuth } from "./hooks/useAuth";
 export default function App() {
   const auth = useAuth();
 
-  if (!auth.isAuthenticated) {
-    return <Login onLogin={auth.login} />;
-  }
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/register" element={<RegisterRecord />} />
-        <Route path="/records" element={<MyRecords />} />
+        {/* Login */}
+        <Route
+          path="/login"
+          element={
+            auth.isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login onLogin={auth.login} />
+            )
+          }
+        />
+
+        {/* Redirect raiz */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Rotas protegidas */}
+        <Route
+          path="/dashboard"
+          element={
+            auth.isAuthenticated ? (
+              <Dashboard />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            auth.isAuthenticated ? (
+              <RegisterRecord />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/records"
+          element={
+            auth.isAuthenticated ? (
+              <MyRecords />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
