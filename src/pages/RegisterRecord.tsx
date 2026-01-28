@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { HelpTooltip } from "../components/HelpTooltip";
 
 /* ---------- Tipos ---------- */
 type Subcausa = {
@@ -70,13 +71,28 @@ function StarRatingField({
     >
       <Stack>
         <Box>
-          <Text fontWeight="semibold" color="purple.700">
-            {causa.nome}
-          </Text>
-          {causa.descricao && (
-            <Text fontSize="sm" color="gray.500">
-              {causa.descricao}
+          <HStack>
+            <Text fontWeight="semibold" color="purple.700">
+              {causa.nome}
             </Text>
+
+            <HelpTooltip
+              text={`Avalie como essa dimensão esteve presente no seu dia.
+Quanto maior a nota, mais equilibrada foi sua postura nessa dimensão.`}
+            />
+          </HStack>
+
+          {causa.descricao && (
+            <HStack>
+              <Text fontSize="sm" color="gray.500">
+                {causa.descricao}
+              </Text>
+
+              <HelpTooltip
+                text={`Essa dimensão representa os aspectos observados pelo modulador
+para avaliar sua postura dentro desse campo específico.`}
+              />
+            </HStack>
           )}
         </Box>
 
@@ -109,38 +125,55 @@ function StarRatingField({
           <>
             <Button
               size="sm"
-              variant="ghost"
+              variant={showSubcauses ? "solid" : "outline"}
               colorScheme="purple"
               alignSelf="flex-start"
+              borderRadius="full"
+              px={4}
+              fontWeight="medium"
+              _hover={{
+                bg: showSubcauses ? "purple.600" : "purple.50",
+              }}
               onClick={() => setShowSubcauses((v) => !v)}
             >
-              {showSubcauses ? "Ocultar subcausas" : "Identificar subcausas"}
+              {showSubcauses
+                ? "Ocultar observações"
+                : "Identificar observações"}
             </Button>
 
             {showSubcauses && (
-              <SimpleGrid columns={2}>
-                {causa.subcausas.map((sub) => (
-                  <Button
-                    key={sub.id}
-                    size="sm"
-                    variant={subcausas.includes(sub.id) ? "solid" : "outline"}
-                    colorScheme="purple"
-                    onClick={() => {
-                      const updated = subcausas.includes(sub.id)
-                        ? subcausas.filter((s) => s !== sub.id)
-                        : [...subcausas, sub.id];
+              <Box
+                mt={3}
+                p={4}
+                bg="purple.50"
+                border="1px solid"
+                borderColor="purple.100"
+                borderRadius="xl"
+              >
+                <SimpleGrid columns={2}>
+                  {causa.subcausas.map((sub) => (
+                    <Button
+                      key={sub.id}
+                      size="sm"
+                      variant={subcausas.includes(sub.id) ? "solid" : "outline"}
+                      colorScheme="purple"
+                      onClick={() => {
+                        const updated = subcausas.includes(sub.id)
+                          ? subcausas.filter((s) => s !== sub.id)
+                          : [...subcausas, sub.id];
 
-                      onChange({
-                        nota,
-                        subcausas: updated,
-                        textoLivre: value?.textoLivre,
-                      });
-                    }}
-                  >
-                    {sub.nome}
-                  </Button>
-                ))}
-              </SimpleGrid>
+                        onChange({
+                          nota,
+                          subcausas: updated,
+                          textoLivre: value?.textoLivre,
+                        });
+                      }}
+                    >
+                      {sub.nome}
+                    </Button>
+                  ))}
+                </SimpleGrid>
+              </Box>
             )}
           </>
         )}
@@ -224,8 +257,8 @@ export default function RegisterRecord() {
           <Heading size="lg">Registrar meu dia</Heading>
 
           <Text color="gray.600" maxW="600px">
-            Avalie como foi seu dia com base nas causas do módulo atual e
-            registre seus sentimentos e aprendizados.
+            Registre como foi a experiencia do seu dia de acordo com as
+            dimensões avaliadas dentro da postura de Saúde 5D
           </Text>
         </Stack>
 
@@ -248,7 +281,7 @@ export default function RegisterRecord() {
             {/* Causas */}
             <Box mb={8}>
               <Heading size="md" mb={4} color="purple.700">
-                Avaliação do dia
+                Avaliação de postura 5D
               </Heading>
 
               <SimpleGrid columns={{ base: 1, md: 2 }}>
@@ -269,20 +302,30 @@ export default function RegisterRecord() {
             </Box>
 
             {/* Emoção + Insight */}
-            <Box
-              bg="white"
-              p={6}
-              rounded="2xl"
-              border="1px"
-              borderColor="purple.100"
-              mb={6}
-            >
-              <SimpleGrid columns={{ base: 1, md: 2 }}>
-                {/* Emoção */}
+            <SimpleGrid columns={{ base: 1, md: 2 }} mb={6} gap={0.5}>
+              {/* Emoção */}
+              <Box
+                bg="white"
+                p={6}
+                rounded="2xl"
+                border="1px"
+                borderColor="purple.100"
+              >
                 <Stack h="100%">
-                  <Text fontWeight="semibold" color="purple.700" fontSize="sm">
-                    Emoção predominante
-                  </Text>
+                  <HStack>
+                    <Text
+                      fontWeight="semibold"
+                      color="purple.700"
+                      fontSize="sm"
+                    >
+                      Emoção predominante
+                    </Text>
+
+                    <HelpTooltip
+                      text={`Informe a emoção que mais marcou seu dia.
+Ela ajuda a contextualizar sua vivência emocional.`}
+                    />
+                  </HStack>
 
                   <Input
                     name="emocao"
@@ -293,12 +336,31 @@ export default function RegisterRecord() {
                     h="48px"
                   />
                 </Stack>
+              </Box>
 
-                {/* Insight */}
+              {/* Insight */}
+              <Box
+                bg="white"
+                p={6}
+                rounded="2xl"
+                border="1px"
+                borderColor="purple.100"
+              >
                 <Stack h="100%">
-                  <Text fontWeight="semibold" color="purple.700" fontSize="sm">
-                    Insight do dia
-                  </Text>
+                  <HStack>
+                    <Text
+                      fontWeight="semibold"
+                      color="purple.700"
+                      fontSize="sm"
+                    >
+                      Insight do dia
+                    </Text>
+
+                    <HelpTooltip
+                      text={`Descreva aprendizados, reflexões ou percepções do dia.
+Esse registro complementa a avaliação das dimensões.`}
+                    />
+                  </HStack>
 
                   <Textarea
                     name="insight"
@@ -310,8 +372,8 @@ export default function RegisterRecord() {
                     h="48px"
                   />
                 </Stack>
-              </SimpleGrid>
-            </Box>
+              </Box>
+            </SimpleGrid>
 
             {/* Botão */}
             <Button

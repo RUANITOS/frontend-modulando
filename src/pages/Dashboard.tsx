@@ -134,7 +134,7 @@ export default function Dashboard() {
             transition="all 0.3s"
           >
             <Heading size="md" mb={3} color="purple.700">
-              Realizar Novo Registro Diário
+              Como está a sua Postura de Saúde 5D hoje?
             </Heading>
 
             <Text color="gray.600" mb={6}>
