@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api } from "../services/api";
 import { Box, Button, Input, Heading, VStack, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo-BUYNVaTL.png";
 
 export default function Login({
   onLogin,
@@ -56,10 +57,18 @@ export default function Login({
       display="flex"
       alignItems="center"
       justifyContent="center"
-      bg="gray.50"
+      bg="rgba(129, 90, 213, 0.09)"
+      shadow="xl"
+      rounded="2xl"
+      border="1px"
     >
       <Box bg="white" p={8} rounded="md" shadow="md" w="100%" maxW="360px">
         <VStack>
+          <img
+            src={logo}
+            alt="Logo do sistema"
+            style={{ height: "48px", objectFit: "contain" }}
+          />
           <Heading size="md">Modulando com Frequência</Heading>
 
           <Input

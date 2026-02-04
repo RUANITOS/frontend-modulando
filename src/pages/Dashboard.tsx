@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo-BUYNVaTL.png";
+
 import {
   Box,
   Heading,
@@ -11,6 +13,7 @@ import {
   Spinner,
   Popover,
   VStack,
+  Portal,
 } from "@chakra-ui/react";
 import { api } from "../services/api";
 
@@ -60,6 +63,12 @@ export default function Dashboard() {
       <Box maxW="1200px" mx="auto">
         {/* Header */}
         <HStack justify="space-between" mb={10}>
+          <img
+            src={logo}
+            alt="Logo do sistema"
+            style={{ height: "48px", objectFit: "contain" }}
+          />
+          {/* Título + módulo */}
           <Box>
             <Heading size="lg">DIÁRIO DE BORDO</Heading>
 
@@ -87,32 +96,36 @@ export default function Dashboard() {
                 </Avatar.Fallback>
               </Avatar.Root>
             </Popover.Trigger>
+            <Portal>
+              <Popover.Positioner>
+                <Popover.Content
+                  w="200px"
+                  bg="white"
+                  border="1px solid"
+                  borderColor="purple.100"
+                  rounded="xl"
+                  shadow="lg"
+                  zIndex="popover"
+                >
+                  <Popover.Body>
+                    <VStack align="stretch">
+                      <Text fontWeight="medium" color="purple.700">
+                        Olá, {userName}
+                      </Text>
 
-            <Popover.Content
-              w="200px"
-              bg="white"
-              border="1px solid"
-              borderColor="purple.100"
-              rounded="xl"
-              shadow="lg"
-            >
-              <Popover.Body>
-                <VStack align="stretch">
-                  <Text fontWeight="medium" color="purple.700">
-                    Olá, {userName}
-                  </Text>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    colorScheme="purple"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </Button>
-                </VStack>
-              </Popover.Body>
-            </Popover.Content>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        colorScheme="purple"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </Button>
+                    </VStack>
+                  </Popover.Body>
+                </Popover.Content>
+              </Popover.Positioner>
+            </Portal>
           </Popover.Root>
         </HStack>
 
