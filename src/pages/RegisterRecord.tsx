@@ -10,6 +10,7 @@ import {
   Text,
   HStack,
   Stack,
+  Spinner,
 } from "@chakra-ui/react";
 import { FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -177,6 +178,43 @@ para avaliar sua postura dentro desse campo específico.`}
             )}
           </>
         )}
+        {/* Observação livre – sempre visível */}
+        <Box
+          mt={4}
+          p={4}
+          bg="gray.50"
+          border="1px solid"
+          borderColor="purple.100"
+          borderRadius="xl"
+        >
+          <Stack>
+            <HStack>
+              <Text fontSize="sm" fontWeight="medium" color="purple.700">
+                Observação
+              </Text>
+
+              <HelpTooltip
+                text="Use este campo para registrar qualquer detalhe relevante,
+mesmo que não esteja listado nas observações acima."
+              />
+            </HStack>
+
+            <Textarea
+              placeholder="Escreva aqui se quiser detalhar melhor essa dimensão..."
+              resize="none"
+              value={value?.textoLivre ?? ""}
+              onChange={(e) =>
+                onChange({
+                  nota,
+                  subcausas,
+                  textoLivre: e.target.value,
+                })
+              }
+              bg="white"
+              minH="80px"
+            />
+          </Stack>
+        </Box>
       </Stack>
     </Box>
   );
@@ -186,6 +224,7 @@ para avaliar sua postura dentro desse campo específico.`}
 export default function RegisterRecord() {
   const [moduloConfig, setModuloConfig] = useState<ModuloConfig | null>(null);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     emocao: "",
@@ -208,7 +247,7 @@ export default function RegisterRecord() {
   }, []);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -217,22 +256,31 @@ export default function RegisterRecord() {
   async function handleSubmit() {
     const token = localStorage.getItem("token");
 
-    await api.post(
-      "/records",
-      {
-        emocao: form.emocao,
-        insight: form.insight,
-        causas: Object.entries(form.causas).map(([causaId, data]) => ({
-          causaId,
-          nota: data.nota,
-          subcausas: data.subcausas,
-          textoLivre: data.textoLivre,
-        })),
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      setLoading(true);
 
-    alert("Registro salvo 🚀");
+      await api.post(
+        "/records",
+        {
+          emocao: form.emocao,
+          insight: form.insight,
+          causas: Object.entries(form.causas).map(([causaId, data]) => ({
+            causaId,
+            nota: data.nota,
+            subcausas: data.subcausas,
+            textoLivre: data.textoLivre,
+          })),
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      alert("Registro salvo 🚀");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      alert("Erro ao salvar registro");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -384,8 +432,9 @@ Esse registro complementa a avaliação das dimensões.`}
               borderColor={"purple"}
               onClick={handleSubmit}
               bg="white"
+              disabled={loading}
             >
-              Salvar registro
+              {loading ? <Spinner size="sm" /> : "Salvar Registro"}
             </Button>
           </Stack>
         </Box>

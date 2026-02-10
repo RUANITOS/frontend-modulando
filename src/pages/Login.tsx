@@ -1,8 +1,18 @@
 import { useState } from "react";
 import { api } from "../services/api";
-import { Box, Button, Input, Heading, VStack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Input,
+  Heading,
+  VStack,
+  Text,
+  Spinner,
+} from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo-BUYNVaTL.png";
+
+type FlowState = "idle" | "not-found" | "first-access" | "login";
 
 export default function Login({
   onLogin,
@@ -12,43 +22,103 @@ export default function Login({
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-  const [cpf, setCpf] = useState("");
+  const [flow, setFlow] = useState<FlowState>("idle");
+
   const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
 
-  const [userExists, setUserExists] = useState<boolean | null>(null);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function checkEmail() {
     if (!email) return;
 
     setLoading(true);
-    const response = await api.get("/auth/check-email", {
-      params: { email },
-    });
+    setError(null);
 
-    setUserExists(response.data.exists);
-    setLoading(false);
+    try {
+      const { data } = await api.get("/auth/check-email", {
+        params: { email },
+      });
+
+      if (!data.exists) {
+        setFlow("not-found");
+      } else if (data.firstAccess) {
+        setFlow("first-access");
+      } else {
+        setFlow("login");
+      }
+    } catch {
+      setError("Erro ao verificar email");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function handleSubmit() {
+  async function handleLogin() {
     setLoading(true);
+    setError(null);
 
-    const response = await api.post("/auth/login", {
-      email,
-      cpf,
-      nome,
-      dataNascimento,
-    });
+    try {
+      const { data } = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
-    const { token, user } = response.data;
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("email", data.user.email);
+      localStorage.setItem("userName", data.user.nome);
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("email", user.email);
-    localStorage.setItem("userName", user.nome);
+      onLogin(data.token);
+      navigate("/dashboard");
+    } catch {
+      setError("Email ou senha inválidos");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    onLogin(token);
-    navigate("/dashboard");
+  async function handleFirstAccess() {
+    if (password !== confirmPassword) {
+      setError("As senhas não conferem");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // cria senha + completa cadastro
+      await api.post("/auth/first-access", {
+        email,
+        nome,
+        cpf,
+        dataNascimento,
+        password,
+        confirmPassword,
+      });
+
+      // login automático após primeiro acesso
+      const { data } = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("email", data.user.email);
+      localStorage.setItem("userName", data.user.nome);
+
+      onLogin(data.token);
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? "Erro ao finalizar cadastro");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -58,17 +128,11 @@ export default function Login({
       alignItems="center"
       justifyContent="center"
       bg="rgba(129, 90, 213, 0.09)"
-      shadow="xl"
-      rounded="2xl"
-      border="1px"
     >
       <Box bg="white" p={8} rounded="md" shadow="md" w="100%" maxW="360px">
         <VStack>
-          <img
-            src={logo}
-            alt="Logo do sistema"
-            style={{ height: "48px", objectFit: "contain" }}
-          />
+          <img src={logo} alt="Logo" style={{ height: 48 }} />
+
           <Heading size="md">Modulando com Frequência</Heading>
 
           <Input
@@ -76,15 +140,29 @@ export default function Login({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onBlur={checkEmail}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                checkEmail();
+              }
+            }}
           />
 
-          {userExists === true && (
+          {flow === "not-found" && (
+            <Text color="red.500" fontSize="sm" textAlign="center">
+              Este email não foi encontrado em nossa base de dados.
+              <br />
+              Em caso de dúvidas, entre em contato com o suporte do programa
+              pelo contato xxxxxx@xxxxx
+            </Text>
+          )}
+
+          {flow === "login" && (
             <>
               <Input
-                placeholder="Senha (CPF)"
-                value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
                 type="password"
+                placeholder="Digite sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
 
               <Button
@@ -93,16 +171,16 @@ export default function Login({
                 w="100%"
                 color="purple.700"
                 borderColor={"purple"}
-                onClick={handleSubmit}
-                loading={loading}
                 bg={"white"}
+                onClick={handleLogin}
+                disabled={loading}
               >
-                Entrar
+                {loading ? <Spinner size="sm" /> : "Entrar"}
               </Button>
             </>
           )}
 
-          {userExists === false && (
+          {flow === "first-access" && (
             <>
               <Input
                 placeholder="Seu nome"
@@ -111,7 +189,7 @@ export default function Login({
               />
 
               <Input
-                placeholder="CPF (somente números)"
+                placeholder="CPF"
                 value={cpf}
                 onChange={(e) => setCpf(e.target.value)}
               />
@@ -122,18 +200,42 @@ export default function Login({
                 onChange={(e) => setDataNascimento(e.target.value)}
               />
 
+              <Input
+                type="password"
+                placeholder="Crie sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <Input
+                type="password"
+                placeholder="Confirme sua senha"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+
               <Button
                 colorScheme="purple"
+                variant="outline"
                 w="100%"
-                onClick={handleSubmit}
-                loading={loading}
+                color="purple.700"
+                borderColor={"purple"}
+                bg={"white"}
+                onClick={handleFirstAccess}
+                disabled={loading}
               >
-                Criar conta
+                {loading ? <Spinner size="sm" /> : "Finalizar cadastro"}
               </Button>
             </>
           )}
 
-          {userExists === null && (
+          {error && (
+            <Text color="red.500" fontSize="sm">
+              {error}
+            </Text>
+          )}
+
+          {flow === "idle" && (
             <Text color="gray.500" fontSize="sm">
               Informe seu email para continuar
             </Text>

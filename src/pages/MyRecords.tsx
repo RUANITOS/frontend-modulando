@@ -10,21 +10,29 @@ import {
   SimpleGrid,
   Badge,
   Button,
+  Spinner,
 } from "@chakra-ui/react";
 
 export default function MyRecords() {
   const navigate = useNavigate();
   const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const token = localStorage.getItem("token");
+      try {
+        setLoading(true);
 
-      const res = await api.get("/records", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        const token = localStorage.getItem("token");
 
-      setRecords(res.data);
+        const res = await api.get("/records", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setRecords(res.data);
+      } finally {
+        setLoading(false);
+      }
     }
 
     load();
@@ -45,8 +53,8 @@ export default function MyRecords() {
     causaId: string;
     nota: number;
     subcausas?: string[];
+    textoLivre?: string;
   };
-
 
   function getMetrics(record: any) {
     const causas: Causa[] = record.causas ?? [];
@@ -57,6 +65,7 @@ export default function MyRecords() {
         value: c.nota,
         max: 5,
         subcausas: c.subcausas ?? [],
+        textoLivre: c.textoLivre,
       }));
     }
 
@@ -80,7 +89,11 @@ export default function MyRecords() {
           Meus Registros
         </Heading>
 
-        {records.length === 0 ? (
+        {loading ? (
+          <Box textAlign="center" py={20}>
+            <Spinner size="sm" />
+          </Box>
+        ) : records.length === 0 ? (
           <Box
             bg="white"
             p={12}
@@ -153,6 +166,21 @@ export default function MyRecords() {
                         bg={"white"}
                       >
                         {metric.value}/{metric.max}
+                        {metric.textoLivre && (
+                          <Text
+                            mt={2}
+                            fontSize="xs"
+                            color="gray.600"
+                            bg="white"
+                            p={2}
+                            rounded="md"
+                            border="1px solid"
+                            borderColor="purple.100"
+                            fontStyle="italic"
+                          >
+                            “{metric.textoLivre}”
+                          </Text>
+                        )}
                       </Badge>
                     </Box>
                   ))}
