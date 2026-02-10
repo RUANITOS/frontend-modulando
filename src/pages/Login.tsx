@@ -114,6 +114,7 @@ export default function Login({
 
       onLogin(data.token);
       navigate("/dashboard");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.response?.data?.error ?? "Erro ao finalizar cadastro");
     } finally {
