@@ -151,9 +151,9 @@ export default function Login({
           {flow === "not-found" && (
             <Text color="red.500" fontSize="sm" textAlign="center">
               Este email não foi encontrado em nossa base de dados.
-              <br />
+              <br /><br />
               Em caso de dúvidas, entre em contato com o suporte do programa
-              pelo contato xxxxxx@xxxxx
+              pelo contato modulacaoquantica@gmail.com
             </Text>
           )}
 
@@ -182,7 +182,9 @@ export default function Login({
           )}
 
           {flow === "first-access" && (
+            
             <>
+            
               <Input
                 placeholder="Seu nome"
                 value={nome}
@@ -199,6 +201,7 @@ export default function Login({
                 type="date"
                 value={dataNascimento}
                 onChange={(e) => setDataNascimento(e.target.value)}
+                placeholder="Data de Nascimento"
               />
 
               <Input
