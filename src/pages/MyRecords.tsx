@@ -163,25 +163,28 @@ export default function MyRecords() {
                         px={3}
                         py={2}
                         rounded="lg"
-                        bg={"white"}
+                        bg="white"
+                        display="inline-block"
                       >
                         {metric.value}/{metric.max}
-                        {metric.textoLivre && (
-                          <Text
-                            mt={2}
-                            fontSize="xs"
-                            color="gray.600"
-                            bg="white"
-                            p={2}
-                            rounded="md"
-                            border="1px solid"
-                            borderColor="purple.100"
-                            fontStyle="italic"
-                          >
-                            “{metric.textoLivre}”
-                          </Text>
-                        )}
                       </Badge>
+
+                      {metric.textoLivre && (
+                        <Text
+                          mt={2}
+                          fontSize="xs"
+                          color="gray.600"
+                          bg="white"
+                          p={2}
+                          rounded="md"
+                          border="1px solid"
+                          borderColor="purple.100"
+                          fontStyle="italic"
+                          wordBreak="break-word" // 🔥 evita estourar layout
+                        >
+                          “{metric.textoLivre}”
+                        </Text>
+                      )}
                     </Box>
                   ))}
                 </SimpleGrid>
